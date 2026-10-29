@@ -2,6 +2,30 @@ import cv2
 import numpy as np
 import matplotlib.pyplot as plt
 
+# 修正(2026-10-29): process_video から呼ばれる split_into_blocks /
+# compute_block_vectors / plot_vectors が未定義だったため追加した
+# （従来は入力動画が無い場合にループが回らず、未定義が露見しなかった）
+def split_into_blocks(frame, block_size):
+    blocks = []
+    height, width = frame.shape
+    for y in range(0, height - block_size + 1, block_size):
+        for x in range(0, width - block_size + 1, block_size):
+            blocks.append(frame[y:y + block_size, x:x + block_size])
+    return blocks
+
+def compute_block_vectors(blocks):
+    vectors = []
+    for block in blocks:
+        vectors.append([np.sum(block), np.mean(block)])
+    return np.array(vectors)
+
+def plot_vectors(vectors):
+    plt.figure()
+    plt.plot(vectors[:, 0], label='sum')
+    plt.plot(vectors[:, 1], label='mean')
+    plt.legend()
+    plt.show()
+
 # 動画からフレームを取得し、画像処理を行う
 def process_video(video_path, block_size):
     cap = cv2.VideoCapture(video_path)
